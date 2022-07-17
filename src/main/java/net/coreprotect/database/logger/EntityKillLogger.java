@@ -23,7 +23,7 @@ public class EntityKillLogger {
 
     public static void log(PreparedStatement preparedStmt, PreparedStatement preparedStmt2, int batchCount, String user, BlockState block, List<Object> data, int type) {
         try {
-            if (ConfigHandler.blacklist.get(user.toLowerCase(Locale.ROOT)) != null) {
+            if (ConfigHandler.blacklist.get(user.toLowerCase(Locale.ROOT)) != null || ConfigHandler.blacklist.get(Util.getEntityName(type)) != null) {
                 return;
             }
 

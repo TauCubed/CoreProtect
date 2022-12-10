@@ -7,11 +7,15 @@ plugins {
 }
 
 group = 'net.coreprotect'
-String projectVersion = '21.2'
-String projectBranch = ''
+String projectVersion = '21.2.2-tau'
+String projectBranch = 'actuallyadevbuild'
 version = projectVersion // `version` might be modified, we don't always want that (e.g. plugin.yml)
 description = 'Provides block protection for your server.'
 sourceCompatibility = '17'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
 
 if (System.getenv("BUILD_NUMBER") != null) {
     // Being built in Jenkins, append Build ID

@@ -7,22 +7,18 @@ plugins {
 }
 
 group = 'net.coreprotect'
-String projectVersion = '21.3-tau'
+String projectVersion = '22.1-tau'
 String projectBranch = 'actuallyadevbuild'
 version = projectVersion // `version` might be modified, we don't always want that (e.g. plugin.yml)
 description = 'Provides block protection for your server.'
 sourceCompatibility = '17'
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
 
 if (System.getenv("BUILD_NUMBER") != null) {
     // Being built in Jenkins, append Build ID
     version += "-${System.getenv("BUILD_NUMBER")}"
 } else if (!(version ==~ '^[^.]*\\.[^.]*\\.[^.]*$')) { // Thanks https://stackoverflow.com/a/9949200/1709894
     // Append the Git hash if 'version' has less than two periods
-    version += "-${gitVersion()}"
+    //version += "-${gitVersion()}"
 }
 logger.info("Building version $version")
 
@@ -38,9 +34,9 @@ dependencies {
     compileOnly('com.sk89q.worldedit:worldedit-bukkit:7.0.0-SNAPSHOT') {
         exclude group: 'org.bukkit'
     }
-    compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'dev.folia:folia-api:1.20.1-R0.1-SNAPSHOT'
     implementation 'org.bstats:bstats-bukkit-lite:1.8'
-    implementation 'com.zaxxer:HikariCP:4.0.3'
+    implementation 'com.zaxxer:HikariCP:5.0.1'
 }
 
 jar {

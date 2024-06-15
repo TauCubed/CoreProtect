@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ import net.coreprotect.bukkit.BukkitAdapter;
 import net.coreprotect.config.Config;
 import net.coreprotect.config.ConfigHandler;
 import net.coreprotect.consumer.Queue;
-import net.coreprotect.database.Rollback;
+import net.coreprotect.database.rollback.Rollback;
 import net.coreprotect.language.Phrase;
 import net.coreprotect.model.BlockGroup;
 import net.coreprotect.thread.CacheHandler;
@@ -126,7 +127,8 @@ public class Util extends Queue {
         }
 
         // command
-        message.append("|/" + command + " teleport wid:" + worldId + " " + (x + 0.50) + " " + y + " " + (z + 0.50) + "|");
+        DecimalFormat decimalFormat = new DecimalFormat("#.##", new DecimalFormatSymbols(Locale.ROOT));
+        message.append("|/" + command + " teleport wid:" + worldId + " " + decimalFormat.format(x + 0.50) + " " + y + " " + decimalFormat.format(z + 0.50) + "|");
 
         // chat output
         message.append(Color.GREY + (italic ? Color.ITALIC : "") + "(x" + x + "/y" + y + "/z" + z + worldDisplay.toString() + ")");
@@ -680,6 +682,30 @@ public class Util extends Queue {
         return false;
     }
 
+    /* return true if item can be added to container */
+    public static boolean canAddContainer(ItemStack[] container, ItemStack item, int forceMaxStack) {
+        for (ItemStack containerItem : container) {
+            if (containerItem == null || containerItem.getType() == Material.AIR) {
+                return true;
+            }
+
+            int maxStackSize = containerItem.getMaxStackSize();
+            if (forceMaxStack > 0 && (forceMaxStack < maxStackSize || maxStackSize == -1)) {
+                maxStackSize = forceMaxStack;
+            }
+
+            if (maxStackSize == -1) {
+                maxStackSize = 1;
+            }
+
+            if (containerItem.isSimilar(item) && containerItem.getAmount() < maxStackSize) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static int getArtId(String name, boolean internal) {
         int id = -1;
         name = name.toLowerCase(Locale.ROOT).trim();
@@ -1013,6 +1039,10 @@ public class Util extends Queue {
 
             name = BukkitAdapter.ADAPTER.parseLegacyName(name);
             material = Material.getMaterial(name);
+
+            if (material == null) {
+                material = Material.getMaterial(name, true);
+            }
         }
 
         return material;
@@ -1282,7 +1312,7 @@ public class Util extends Queue {
 
     public static boolean isFolia() {
         try {
-            Class.forName("io.papermc.paper.threadedregions.ThreadedRegionizer");
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
         }
         catch (Exception e) {
             return false;
@@ -1385,7 +1415,7 @@ public class Util extends Queue {
         Map<String, Object> itemMap = new HashMap<>();
         if (itemStack != null && !itemStack.getType().equals(Material.AIR)) {
             ItemStack item = itemStack.clone();
-            List<List<Map<String, Object>>> metadata = ItemMetaHandler.seralize(item, null, faceData, slot);
+            List<List<Map<String, Object>>> metadata = ItemMetaHandler.serialize(item, null, faceData, slot);
             item.setItemMeta(null);
             itemMap.put("0", item.serialize());
             itemMap.put("1", metadata);

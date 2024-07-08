@@ -22,7 +22,6 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 import net.coreprotect.CoreProtect;
@@ -251,7 +250,12 @@ public final class InventoryChangeListener extends Queue implements Listener {
             // Perform this check to prevent triggering onInventoryInteractAsync when a user is just clicking items in their own inventory
             Inventory inventory = null;
             try {
-                inventory = event.getView().getInventory(event.getRawSlot());
+                try {
+                    inventory = event.getView().getInventory(event.getRawSlot());
+                }
+                catch (IncompatibleClassChangeError e) {
+                    inventory = event.getClickedInventory();
+                }
             }
             catch (Exception e) {
                 return;
@@ -288,19 +292,16 @@ public final class InventoryChangeListener extends Queue implements Listener {
     protected void onInventoryDragEvent(InventoryDragEvent event) {
         boolean movedItem = false;
         boolean enderChest = false;
-        InventoryView inventoryView = event.getView();
-        for (Integer slot : event.getRawSlots()) {
-            Inventory inventory = inventoryView.getInventory(slot);
-            if (inventory == null) {
-                continue;
-            }
 
-            InventoryHolder inventoryHolder = inventory.getHolder();
-            enderChest = inventory.equals(event.getWhoClicked().getEnderChest());
-            if ((inventoryHolder != null && (inventoryHolder instanceof BlockInventoryHolder || inventoryHolder instanceof DoubleChest)) || enderChest) {
-                movedItem = true;
-                break;
-            }
+        Inventory inventory = event.getInventory();
+        InventoryHolder inventoryHolder = inventory.getHolder();
+        if (inventory == null || inventoryHolder != null && inventoryHolder.equals(event.getWhoClicked())) {
+            return;
+        }
+
+        enderChest = inventory.equals(event.getWhoClicked().getEnderChest());
+        if ((inventoryHolder != null && (inventoryHolder instanceof BlockInventoryHolder || inventoryHolder instanceof DoubleChest)) || enderChest) {
+            movedItem = true;
         }
 
         if (!movedItem) {
@@ -344,10 +345,16 @@ public final class InventoryChangeListener extends Queue implements Listener {
 
         if (hopperTransactions) {
             if (Validate.isHopper(destinationHolder) && (Validate.isContainer(sourceHolder) && !Validate.isHopper(sourceHolder))) {
-                HopperPullListener.processHopperPull(location, sourceHolder, destinationHolder, event.getItem());
+                HopperPullListener.processHopperPull(location, "#hopper", sourceHolder, destinationHolder, event.getItem());
             }
             else if (Validate.isHopper(sourceHolder) && (Validate.isContainer(destinationHolder) && !Validate.isHopper(destinationHolder))) {
-                HopperPushListener.processHopperPush(location, sourceHolder, destinationHolder, event.getItem());
+                HopperPushListener.processHopperPush(location, "#hopper", sourceHolder, destinationHolder, event.getItem());
+            }
+            else if (Validate.isDropper(sourceHolder) && (Validate.isContainer(destinationHolder))) {
+                HopperPullListener.processHopperPull(location, "#dropper", sourceHolder, destinationHolder, event.getItem());
+                if (!Validate.isHopper(destinationHolder)) {
+                    HopperPushListener.processHopperPush(location, "#dropper", sourceHolder, destinationHolder, event.getItem());
+                }
             }
 
             return;
@@ -362,6 +369,6 @@ public final class InventoryChangeListener extends Queue implements Listener {
             return;
         }
 
-        HopperPullListener.processHopperPull(location, sourceHolder, destinationHolder, event.getItem());
+        HopperPullListener.processHopperPull(location, "#hopper", sourceHolder, destinationHolder, event.getItem());
     }
 }

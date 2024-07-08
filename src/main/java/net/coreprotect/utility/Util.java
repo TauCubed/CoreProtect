@@ -579,16 +579,27 @@ public class Util extends Queue {
             bos.close();
             result = bos.toByteArray();
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (Exception e) { // only display exception on development branch
+            if (!ConfigHandler.EDITION_BRANCH.contains("-dev")) {
+                e.printStackTrace();
+            }
         }
 
         return result;
     }
 
     public static ItemMeta deserializeItemMeta(Class<? extends ItemMeta> itemMetaClass, Map<String, Object> args) {
-        DelegateDeserialization delegate = itemMetaClass.getAnnotation(DelegateDeserialization.class);
-        return (ItemMeta) ConfigurationSerialization.deserializeObject(args, delegate.value());
+        try {
+            DelegateDeserialization delegate = itemMetaClass.getAnnotation(DelegateDeserialization.class);
+            return (ItemMeta) ConfigurationSerialization.deserializeObject(args, delegate.value());
+        }
+        catch (Exception e) { // only display exception on development branch
+            if (!ConfigHandler.EDITION_BRANCH.contains("-dev")) {
+                e.printStackTrace();
+            }
+        }
+
+        return null;
     }
 
     public static <K, V extends Comparable<? super V>> SortedSet<Map.Entry<K, V>> entriesSortedByValues(Map<K, V> map) {
@@ -917,27 +928,33 @@ public class Util extends Queue {
     }
 
     public static Material getEntityMaterial(EntityType type) {
-        switch (type) {
-            case ARMOR_STAND:
+        switch (type.name()) {
+            case "ARMOR_STAND":
                 return Material.ARMOR_STAND;
-            case ITEM_FRAME:
+            case "ITEM_FRAME":
                 return Material.ITEM_FRAME;
-            case ENDER_CRYSTAL:
+            case "END_CRYSTAL":
+            case "ENDER_CRYSTAL":
                 return Material.END_CRYSTAL;
-            case ENDER_PEARL:
+            case "ENDER_PEARL":
                 return Material.ENDER_PEARL;
-            case SPLASH_POTION:
+            case "POTION":
+            case "SPLASH_POTION":
                 return Material.SPLASH_POTION;
-            case THROWN_EXP_BOTTLE:
+            case "EXPERIENCE_BOTTLE":
+            case "THROWN_EXP_BOTTLE":
                 return Material.EXPERIENCE_BOTTLE;
-            case TRIDENT:
+            case "TRIDENT":
                 return Material.TRIDENT;
-            case FIREWORK:
+            case "FIREWORK_ROCKET":
+            case "FIREWORK":
                 return Material.FIREWORK_ROCKET;
-            case EGG:
+            case "EGG":
                 return Material.EGG;
-            case SNOWBALL:
+            case "SNOWBALL":
                 return Material.SNOWBALL;
+            case "WIND_CHARGE":
+                return Material.valueOf("WIND_CHARGE");
             default:
                 return BukkitAdapter.ADAPTER.getFrameType(type);
         }

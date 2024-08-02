@@ -18,10 +18,11 @@ public class SkullStatement {
         throw new IllegalStateException("Database class");
     }
 
-    public static ResultSet insert(PreparedStatement preparedStmt, int time, String owner) {
+    public static ResultSet insert(PreparedStatement preparedStmt, int time, String owner, String skin) {
         try {
             preparedStmt.setInt(1, time);
             preparedStmt.setString(2, owner);
+            preparedStmt.setString(3, skin);
             if (Database.hasReturningKeys()) {
                 return preparedStmt.executeQuery();
             }
@@ -52,6 +53,11 @@ public class SkullStatement {
                 }
                 else if (owner != null && owner.length() > 1) {
                     PaperAdapter.ADAPTER.setSkullOwner(skull, owner);
+                }
+
+                String skin = resultSet.getString("skin");
+                if (owner != null && skin != null && skin.length() > 0) {
+                    PaperAdapter.ADAPTER.setSkullSkin(skull, skin);
                 }
             }
 

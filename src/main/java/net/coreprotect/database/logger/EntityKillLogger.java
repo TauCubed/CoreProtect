@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Locale;
 
+import net.coreprotect.utility.EntityUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.BlockState;
 
@@ -16,7 +17,7 @@ import net.coreprotect.database.statement.BlockStatement;
 import net.coreprotect.database.statement.EntityStatement;
 import net.coreprotect.database.statement.UserStatement;
 import net.coreprotect.event.CoreProtectPreLogEvent;
-import net.coreprotect.utility.Util;
+import net.coreprotect.utility.WorldUtils;
 
 public class EntityKillLogger {
 
@@ -26,7 +27,7 @@ public class EntityKillLogger {
 
     public static void log(PreparedStatement preparedStmt, PreparedStatement preparedStmt2, int batchCount, String user, BlockState block, List<Object> data, int type) {
         try {
-            if (ConfigHandler.blacklist.get(user.toLowerCase(Locale.ROOT)) != null || ConfigHandler.blacklist.get(Util.getEntityName(type)) != null) {
+            if (ConfigHandler.blacklist.get(user.toLowerCase(Locale.ROOT)) != null || ConfigHandler.blacklist.get(EntityUtils.getEntityName(type)) != null) {
                 return;
             }
 
@@ -40,7 +41,7 @@ public class EntityKillLogger {
             }
 
             int userId = UserStatement.getId(preparedStmt, event.getUser(), true);
-            int wid = Util.getWorldId(block.getWorld().getName());
+            int wid = WorldUtils.getWorldId(block.getWorld().getName());
             int time = (int) (System.currentTimeMillis() / 1000L);
             int x = block.getX();
             int y = block.getY();
